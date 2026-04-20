@@ -1,11 +1,15 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
+from flask import Flask, jsonify, make_response
 import yfinance as yf
 from datetime import datetime
 import os
 
 app = Flask(__name__)
-CORS(app)
+
+def add_cors(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = '*'
+    return response
 
 HOLDINGS = {
     "TAAIX": {"name": "Thrivent Aggressive Allocation Fund S", "shares": 414.198},
@@ -23,11 +27,11 @@ def fetch_price(ticker):
         print(f"Could not fetch {ticker}: {e}")
     return None
 
-@app.route("/")
+@app.route("/", methods=["GET","OPTIONS"])
 def home():
-    return jsonify({"status": "ok", "server": "Diego Portfolio Price Server"})
+    return add_cors(make_response(jsonify({"status": "ok"})))
 
-@app.route("/prices")
+@app.route("/prices", methods=["GET","OPTIONS"])
 def prices():
     result = {}
     for ticker, meta in HOLDINGS.items():
@@ -45,11 +49,11 @@ def prices():
         "updated": datetime.now().strftime("%I:%M %p"),
         "source":  "yfinance",
     }
-    return jsonify(result)
+    return add_cors(make_response(jsonify(result)))
 
-@app.route("/health")
+@app.route("/health", methods=["GET","OPTIONS"])
 def health():
-    return jsonify({"status": "ok"})
+    return add_cors(make_response(jsonify({"status": "ok"})))
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
