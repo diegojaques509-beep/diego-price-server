@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, make_response
 import yfinance as yf
 from datetime import datetime
+import pytz
 import os
 
 app = Flask(__name__)
@@ -27,6 +28,10 @@ def fetch_price(ticker):
         print(f"Could not fetch {ticker}: {e}")
     return None
 
+def get_pt_time():
+    pt = pytz.timezone("America/Los_Angeles")
+    return datetime.now(pt).strftime("%I:%M %p PT")
+
 @app.route("/", methods=["GET","OPTIONS"])
 def home():
     return add_cors(make_response(jsonify({"status": "ok"})))
@@ -46,7 +51,7 @@ def prices():
         }
         print(f"  {ticker}: {'$' + str(price) if price else 'unavailable'}")
     result["_meta"] = {
-        "updated": datetime.now().strftime("%I:%M %p"),
+        "updated": get_pt_time(),
         "source":  "yfinance",
     }
     return add_cors(make_response(jsonify(result)))
