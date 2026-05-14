@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portfolio</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg"/>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ── Navbar ─────────────────────────────────────────────────────────────── -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <img src="/static/img/logo.svg" alt="logo" class="navbar-logo"/>
+    <span class="navbar-title">Portfolio</span>
+  </div>
+  <div class="navbar-right">
+    <span class="updated-time" id="updatedTime">–</span>
+    <button class="btn btn-primary" id="refreshBtn" onclick="loadHoldings()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      Refresh
+    </button>
+  </div>
+</nav>
+
+<!-- ── Main ───────────────────────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Stats row -->
+  <div class="stats-row">
+    <div class="stat-card stat-card--primary">
+      <div class="stat-label">Total Portfolio Value</div>
+      <div class="stat-value" id="totalValue">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Holdings</div>
+      <div class="stat-value" id="holdingsCount">–</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Status</div>
+      <div class="stat-value" id="statusBadge"><span class="badge badge--loading">Loading…</span></div>
+    </div>
+  </div>
+
+  <!-- Holdings table -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Holdings</h2>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Holding
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table" id="holdingsTable">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th>Name</th>
+            <th class="text-right">Shares</th>
+            <th class="text-right">Price</th>
+            <th class="text-right">Value</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="holdingsBody">
+          <tr><td colspan="6" class="table-empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">Portfolio Value — Last 30 Days</h2>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="historyChart"></canvas>
+    </div>
+  </div>
+
+</main>
+
+<!-- ── Add Modal ──────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Holding</h3>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Search Ticker</label>
+        <input type="text" class="form-input" id="tickerSearch" placeholder="e.g. AAPL, S&P 500, Thrivent…" oninput="onTickerSearch(this.value)" autocomplete="off"/>
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ticker</label>
+        <input type="text" class="form-input" id="addTicker" placeholder="AAPL" style="text-transform:uppercase"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-input" id="addName" placeholder="Apple Inc."/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Shares</label>
+        <input type="number" class="form-input" id="addShares" placeholder="0.00" step="0.001" min="0.001"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAdd()">Add Holding</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Modal ─────────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Edit Holding</h3>
+      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editId"/>
+      <div class="form-group">
+        <label class="form-label">Ticker</label>
+        <input type="text" class="form-input" id="editTicker" disabled/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" class="form-input" id="editName"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Shares</label>
+        <input type="number" class="form-input" id="editShares" step="0.001" min="0.001"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('editModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Delete Confirm ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal modal--sm">
+    <div class="modal-header">
+      <h3 class="modal-title">Remove Holding</h3>
+      <button class="modal-close" onclick="closeModal('deleteModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-text">Remove <strong id="deleteName"></strong> from your portfolio?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>

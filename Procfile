@@ -1,1 +1,1 @@
-web: gunicorn price_server:app
+web: gunicorn app:app

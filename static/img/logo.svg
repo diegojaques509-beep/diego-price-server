@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00d26a"/>
+      <stop offset="100%" style="stop-color:#00a854"/>
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="20" cy="20" r="20" fill="#141420"/>
+  <!-- Chart line -->
+  <polyline points="6,28 13,22 19,25 26,14 34,10"
+    fill="none" stroke="url(#g)" stroke-width="2.5"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Dot at peak -->
+  <circle cx="34" cy="10" r="2.5" fill="#00d26a"/>
+</svg>
