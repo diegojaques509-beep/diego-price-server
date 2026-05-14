@@ -1,177 +1,830 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Portfolio</title>
-  <link rel="icon" type="image/svg+xml" href="/static/img/logo.svg"/>
-  <link rel="stylesheet" href="/static/css/style.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Diego Finance"/>
+<title>Diego Finance</title>
+<link rel="icon" type="image/svg+xml" href="/static/img/logo.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #222; --surface3: #2c2c2c;
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+  --text: #f0f0f0; --secondary: #aaa; --muted: #666;
+  --red: #e8254a; --red-dim: rgba(232,37,74,0.12);
+  --green: #1a8a4a; --green-dim: rgba(26,138,74,0.12);
+  --font: 'Inter', sans-serif;
+}
+html,body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; min-height:100vh; }
+.app { display:flex; flex-direction:column; min-height:100vh; max-width:480px; margin:0 auto; }
+
+.header { background:var(--surface); border-bottom:3px solid var(--red); padding:52px 20px 14px; display:flex; justify-content:space-between; align-items:center; }
+.wm-top { font-size:18px; font-weight:700; } .wm-top span { color:var(--red); }
+.wm-sub { font-size:9px; font-weight:600; letter-spacing:0.14em; color:var(--muted); text-transform:uppercase; margin-top:3px; }
+.hdr-name { font-size:13px; font-weight:600; text-align:right; }
+.hdr-date { font-size:11px; color:var(--muted); margin-top:2px; text-align:right; }
+
+.sync-bar { background:var(--surface2); border-bottom:1px solid var(--border); padding:8px 20px; display:flex; align-items:center; justify-content:space-between; }
+.sync-left { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); }
+.dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; transition:background 0.3s; }
+.dot.live  { background:var(--green); box-shadow:0 0 5px rgba(26,138,74,0.5); }
+.dot.error { background:var(--red); }
+.dot.loading { background:#888; animation:pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+.refresh-btn { font-size:11px; color:var(--red); border:none; background:none; font-family:var(--font); font-weight:600; cursor:pointer; }
+
+.nav { display:flex; background:var(--surface); border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; }
+.nav::-webkit-scrollbar { display:none; }
+.nav-btn { flex:1; padding:12px 6px; border:none; background:none; font-family:var(--font); font-size:12px; font-weight:500; color:var(--muted); cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent; transition:all 0.15s; min-width:72px; }
+.nav-btn.active { color:var(--text); border-bottom-color:var(--red); font-weight:600; }
+
+.content { padding:14px 14px 110px; flex:1; }
+.section { display:none; } .section.active { display:block; }
+
+.hero { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:12px; overflow:hidden; }
+.hero-main { padding:20px 18px 16px; border-bottom:1px solid var(--border); }
+.hero-lbl { font-size:10px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.hero-val { font-size:36px; font-weight:700; letter-spacing:-0.02em; }
+.hero-sub { font-size:12px; color:var(--muted); margin-top:5px; }
+.hero-stats { display:grid; grid-template-columns:1fr 1fr; }
+.hero-stat { padding:13px 18px; border-right:1px solid var(--border); }
+.hero-stat:last-child { border-right:none; }
+.hs-lbl { font-size:10px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:5px; }
+.hs-val { font-size:17px; font-weight:700; }
+.hs-val.up { color:var(--green); } .hs-val.down { color:var(--red); }
+
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:12px; overflow:hidden; }
+.card-head { padding:13px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+.card-title { font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--secondary); }
+.card-action { font-size:12px; color:var(--red); border:none; background:none; font-family:var(--font); font-weight:600; cursor:pointer; }
+.card-body { padding:14px 16px; }
+
+.cash-row { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; }
+.cash-lbl { font-size:12px; color:var(--secondary); }
+.cash-right { display:flex; align-items:center; gap:8px; }
+.cash-val { font-size:18px; font-weight:700; }
+.cash-edit-btn { font-size:11px; color:var(--red); border:1px solid var(--red-dim); background:var(--red-dim); border-radius:5px; padding:3px 9px; font-family:var(--font); font-weight:600; cursor:pointer; }
+.cash-input-row { display:none; padding:0 16px 14px; gap:8px; }
+.cash-input-row.open { display:flex; }
+.cash-input { flex:1; background:var(--surface3); border:1px solid var(--border2); border-radius:7px; padding:10px 12px; color:var(--text); font-family:var(--font); font-size:15px; font-weight:600; outline:none; }
+.cash-input:focus { border-color:var(--red); }
+.cash-save { padding:10px 16px; background:var(--red); border:none; border-radius:7px; color:#fff; font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer; }
+
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.stat-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px; }
+.sc-lbl { font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.sc-val { font-size:19px; font-weight:700; }
+.sc-val.up { color:var(--green); } .sc-val.down { color:var(--red); }
+
+.chart-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:12px; overflow:hidden; }
+.chart-head { padding:14px 16px 10px; border-bottom:1px solid var(--border); }
+.chart-top-row { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+.chart-ticker { font-size:11px; font-weight:700; letter-spacing:0.08em; color:var(--secondary); }
+.chart-nav-val { font-size:24px; font-weight:700; }
+.chart-delta { display:inline-flex; align-items:center; font-size:12px; font-weight:600; padding:3px 9px; border-radius:20px; }
+.chart-fund-name { font-size:11px; color:var(--muted); }
+.period-pills { display:flex; gap:5px; padding:10px 16px; }
+.pill { padding:5px 12px; border-radius:20px; border:1px solid var(--border2); background:none; font-family:var(--font); font-size:11px; font-weight:600; color:var(--muted); cursor:pointer; transition:all 0.15s; }
+.pill.active-up { background:var(--green); border-color:var(--green); color:#fff; }
+.pill.active-dn { background:var(--red); border-color:var(--red); color:#fff; }
+.chart-wrap { padding:0 16px 4px; position:relative; }
+#chart-svg { width:100%; display:block; }
+.chart-footer { padding:6px 16px 12px; font-size:10px; color:var(--muted); }
+#chart-tooltip { position:absolute; pointer-events:none; display:none; background:#111; border:1px solid var(--border2); border-radius:8px; padding:8px 12px; font-size:12px; white-space:nowrap; z-index:10; }
+.tt-date { color:var(--muted); font-size:10px; margin-bottom:3px; }
+.tt-val { font-weight:700; font-size:14px; }
+
+.h-table { width:100%; border-collapse:collapse; font-size:13px; }
+.h-table th { font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); padding:0 0 10px; text-align:left; }
+.h-table th:last-child { text-align:right; }
+.h-table td { padding:11px 0; border-top:1px solid var(--border); vertical-align:middle; }
+.h-table td:last-child { text-align:right; }
+.ticker-badge { display:inline-block; background:var(--red-dim); color:var(--red); font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; cursor:pointer; }
+.ticker-badge:hover { background:rgba(232,37,74,0.22); }
+.fund-name-sm { font-size:11px; color:var(--muted); margin-top:3px; max-width:120px; line-height:1.3; }
+.alloc-cell { display:flex; align-items:center; gap:6px; justify-content:flex-end; }
+.alloc-bar-bg { width:40px; height:4px; background:var(--surface3); border-radius:2px; overflow:hidden; }
+.alloc-bar-fill { height:100%; border-radius:2px; transition:width 0.5s; }
+
+.alloc-item { display:flex; align-items:center; gap:10px; margin-bottom:11px; }
+.alloc-item:last-child { margin-bottom:0; }
+.alloc-lbl { font-size:11px; font-weight:700; width:48px; color:var(--secondary); flex-shrink:0; }
+.alloc-bg { flex:1; height:5px; background:var(--surface3); border-radius:3px; overflow:hidden; }
+.alloc-fill { height:100%; border-radius:3px; transition:width 0.6s; }
+.alloc-pct { font-size:11px; color:var(--muted); width:30px; text-align:right; flex-shrink:0; }
+
+.donut-wrap { position:relative; width:100px; height:100px; margin:0 auto 12px; }
+.donut-wrap svg { width:100px; height:100px; }
+.donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+.donut-pct { font-size:17px; font-weight:700; }
+.donut-lbl { font-size:9px; color:var(--muted); letter-spacing:0.06em; text-transform:uppercase; }
+.bcat { display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--border); }
+.bcat:last-child { border-bottom:none; }
+.bcat-left { display:flex; align-items:center; gap:10px; }
+.bcat-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.bcat-right { text-align:right; }
+.bcat-spent { font-size:13px; font-weight:600; }
+.bcat-of { font-size:11px; color:var(--muted); margin-top:2px; }
+.bcat-bar-bg { height:3px; background:var(--surface3); border-radius:2px; margin-top:5px; overflow:hidden; width:70px; margin-left:auto; }
+.bcat-bar-fill { height:100%; border-radius:2px; }
+
+.exp-item { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--border); }
+.exp-item:last-child { border-bottom:none; }
+.exp-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.exp-name { font-size:13px; font-weight:500; }
+.exp-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+.exp-amt { font-size:13px; font-weight:600; color:var(--red); margin-left:auto; flex-shrink:0; }
+
+.trend-bar { display:flex; align-items:flex-end; gap:5px; height:56px; }
+.trend-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.trend-inner { width:100%; border-radius:3px 3px 0 0; }
+.trend-lbl { font-size:9px; color:var(--muted); }
+
+.fab { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:var(--red); color:#fff; border:none; border-radius:30px; padding:14px 34px; font-family:var(--font); font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 6px 28px rgba(232,37,74,0.4); white-space:nowrap; z-index:50; letter-spacing:0.02em; }
+.fab:active { transform:translateX(-50%) scale(0.97); }
+
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:100; align-items:flex-end; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border-radius:18px 18px 0 0; border-top:3px solid var(--red); padding:24px 20px 48px; width:100%; max-width:480px; }
+.modal-title { font-size:16px; font-weight:700; margin-bottom:20px; }
+.modal label { display:block; font-size:10px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.modal input,.modal select { width:100%; background:var(--surface2); border:1px solid var(--border2); border-radius:8px; padding:11px 12px; color:var(--text); font-family:var(--font); font-size:15px; margin-bottom:14px; outline:none; appearance:none; }
+.modal input:focus,.modal select:focus { border-color:var(--red); }
+.modal-actions { display:flex; gap:10px; margin-top:6px; }
+.btn-cancel { flex:1; padding:13px; background:var(--surface2); border:1px solid var(--border); border-radius:9px; color:var(--muted); font-family:var(--font); font-size:14px; cursor:pointer; }
+.btn-save { flex:2; padding:13px; background:var(--red); border:none; border-radius:9px; color:#fff; font-family:var(--font); font-size:14px; font-weight:700; cursor:pointer; }
+option { background:#222; }
+
+.search-results { background:var(--surface3); border:1px solid var(--border2); border-radius:8px; margin-top:-10px; margin-bottom:14px; overflow:hidden; display:none; }
+.search-results.open { display:block; }
+.search-result-item { display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--border); }
+.search-result-item:last-child { border-bottom:none; }
+.search-result-item:hover { background:var(--surface2); }
+.sri-ticker { font-size:12px; font-weight:700; color:var(--red); min-width:52px; }
+.sri-name { font-size:12px; color:var(--secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.sri-type { margin-left:auto; font-size:10px; color:var(--muted); text-transform:uppercase; flex-shrink:0; }
+</style>
 </head>
 <body>
+<div class="app">
 
-<!-- ── Navbar ─────────────────────────────────────────────────────────────── -->
-<nav class="navbar">
-  <div class="navbar-brand">
-    <img src="/static/img/logo.svg" alt="logo" class="navbar-logo"/>
-    <span class="navbar-title">Portfolio</span>
-  </div>
-  <div class="navbar-right">
-    <span class="updated-time" id="updatedTime">–</span>
-    <button class="btn btn-primary" id="refreshBtn" onclick="loadHoldings()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
-        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-      </svg>
-      Refresh
-    </button>
-  </div>
-</nav>
-
-<!-- ── Main ───────────────────────────────────────────────────────────────── -->
-<main class="main">
-
-  <!-- Stats row -->
-  <div class="stats-row">
-    <div class="stat-card stat-card--primary">
-      <div class="stat-label">Total Portfolio Value</div>
-      <div class="stat-value" id="totalValue">–</div>
+  <div class="header">
+    <div>
+      <div class="wm-top">diego<span> ◆</span></div>
+      <div class="wm-sub">Personal Finance</div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Holdings</div>
-      <div class="stat-value" id="holdingsCount">–</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Status</div>
-      <div class="stat-value" id="statusBadge"><span class="badge badge--loading">Loading…</span></div>
+    <div>
+      <div class="hdr-name">Diego Jaques</div>
+      <div class="hdr-date" id="hdr-date"></div>
     </div>
   </div>
 
-  <!-- Holdings table -->
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">Holdings</h2>
-      <button class="btn btn-primary" onclick="openAddModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        Add Holding
-      </button>
+  <div class="sync-bar">
+    <div class="sync-left">
+      <div class="dot loading" id="sync-dot"></div>
+      <span id="sync-text">Connecting...</span>
     </div>
-
-    <div class="table-wrap">
-      <table class="table" id="holdingsTable">
-        <thead>
-          <tr>
-            <th>Ticker</th>
-            <th>Name</th>
-            <th class="text-right">Shares</th>
-            <th class="text-right">Price</th>
-            <th class="text-right">Value</th>
-            <th class="text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="holdingsBody">
-          <tr><td colspan="6" class="table-empty">Loading…</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <button class="refresh-btn" onclick="syncPrices()">Refresh</button>
   </div>
 
-  <!-- Chart -->
-  <div class="card">
-    <div class="card-header">
-      <h2 class="card-title">Portfolio Value — Last 30 Days</h2>
-    </div>
-    <div class="chart-wrap">
-      <canvas id="historyChart"></canvas>
-    </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="switchTab('overview',this)">Overview</button>
+    <button class="nav-btn" onclick="switchTab('investments',this)">Investments</button>
+    <button class="nav-btn" onclick="switchTab('budget',this)">Budget</button>
+    <button class="nav-btn" onclick="switchTab('expenses',this)">Expenses</button>
   </div>
 
-</main>
+  <div class="content">
 
-<!-- ── Add Modal ──────────────────────────────────────────────────────────── -->
-<div class="modal-overlay" id="addModal">
+    <!-- OVERVIEW -->
+    <div class="section active" id="tab-overview">
+      <div class="hero">
+        <div class="hero-main">
+          <div class="hero-lbl">Total Net Worth</div>
+          <div class="hero-val" id="nw-val">...</div>
+          <div class="hero-sub" id="nw-sub">syncing investments</div>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="hs-lbl">Investments</div><div class="hs-val up" id="ov-invest">...</div></div>
+          <div class="hero-stat"><div class="hs-lbl">Cash</div><div class="hs-val" id="ov-cash">...</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">Cash Balance</span></div>
+        <div class="cash-row">
+          <span class="cash-lbl">Bank account balance</span>
+          <div class="cash-right">
+            <span class="cash-val" id="cash-display">...</span>
+            <button class="cash-edit-btn" onclick="toggleCashEdit()">Edit</button>
+          </div>
+        </div>
+        <div class="cash-input-row" id="cash-input-row">
+          <input class="cash-input" id="cash-input" type="number" placeholder="Enter current balance"/>
+          <button class="cash-save" onclick="saveCash()">Save</button>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="stat-card"><div class="sc-lbl">Monthly Budget</div><div class="sc-val" id="ov-budget">...</div></div>
+        <div class="stat-card"><div class="sc-lbl">Spent</div><div class="sc-val down" id="ov-spent">$0</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="card-title">Spending Trend</span></div>
+        <div class="card-body"><div class="trend-bar" id="spend-trend"></div></div>
+      </div>
+    </div>
+
+    <!-- INVESTMENTS -->
+    <div class="section" id="tab-investments">
+      <div class="chart-card">
+        <div class="chart-head">
+          <div class="chart-top-row">
+            <span class="chart-ticker" id="chart-ticker-lbl">–</span>
+            <span class="chart-nav-val" id="chart-nav-val">...</span>
+            <span class="chart-delta" id="chart-delta"></span>
+          </div>
+          <div class="chart-fund-name" id="chart-fund-name">Select a holding below</div>
+        </div>
+        <div class="period-pills">
+          <button class="pill" onclick="setPeriod('1D')">1D</button>
+          <button class="pill" onclick="setPeriod('1W')">1W</button>
+          <button class="pill active-up" onclick="setPeriod('1M')">1M</button>
+          <button class="pill" onclick="setPeriod('6M')">6M</button>
+          <button class="pill" onclick="setPeriod('YTD')">YTD</button>
+        </div>
+        <div class="chart-wrap">
+          <svg id="chart-svg" height="160"></svg>
+          <div id="chart-tooltip">
+            <div class="tt-date" id="tt-date"></div>
+            <div class="tt-val" id="tt-val"></div>
+          </div>
+        </div>
+        <div class="chart-footer">Source: yfinance. Tap a ticker below to chart it.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Portfolio Value</span>
+          <span class="live-tag" id="live-tag" style="font-size:10px;background:var(--green-dim);color:var(--green);padding:2px 8px;border-radius:4px;font-weight:600;">syncing</span>
+        </div>
+        <div class="card-body">
+          <div style="font-size:28px;font-weight:700;margin-bottom:16px;" id="inv-total">...</div>
+          <div id="alloc-rows"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Holdings</span>
+          <button class="card-action" onclick="openModal('holding')">+ Add</button>
+        </div>
+        <div class="card-body">
+          <table class="h-table">
+            <thead><tr><th>Fund</th><th>Shares</th><th style="text-align:right;">Value</th></tr></thead>
+            <tbody id="holdings-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- BUDGET -->
+    <div class="section" id="tab-budget">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title" id="budget-month-title">Budget</span>
+          <button class="card-action" onclick="openModal('budget')">Edit</button>
+        </div>
+        <div class="card-body" style="text-align:center;">
+          <div class="donut-wrap">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#2c2c2c" stroke-width="10"/>
+              <circle id="donut-arc" cx="50" cy="50" r="40" fill="none" stroke="#e8254a" stroke-width="10" stroke-dasharray="0 251" stroke-linecap="round" transform="rotate(-90 50 50)" style="transition:stroke-dasharray 0.6s;"/>
+            </svg>
+            <div class="donut-center">
+              <div class="donut-pct" id="donut-pct">0%</div>
+              <div class="donut-lbl">used</div>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);" id="budget-summary">$0 of $0 spent</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Categories</span>
+          <button class="card-action" onclick="openModal('category')">+ Add</button>
+        </div>
+        <div class="card-body" id="budget-cats"></div>
+      </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="section" id="tab-expenses">
+      <div class="grid2" style="margin-bottom:12px;">
+        <div class="stat-card"><div class="sc-lbl">This Month</div><div class="sc-val down" id="exp-month">$0</div></div>
+        <div class="stat-card"><div class="sc-lbl">Transactions</div><div class="sc-val" id="exp-count">0</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Recent Transactions</span></div>
+        <div class="card-body" id="expense-list"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<button class="fab" id="fab" onclick="fabAction()">+ Add Expense</button>
+
+<!-- Add Holding Modal -->
+<div class="modal-overlay" id="modal-holding">
   <div class="modal">
-    <div class="modal-header">
-      <h3 class="modal-title">Add Holding</h3>
-      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Search Ticker</label>
-        <input type="text" class="form-input" id="tickerSearch" placeholder="e.g. AAPL, S&P 500, Thrivent…" oninput="onTickerSearch(this.value)" autocomplete="off"/>
-        <div class="search-results" id="searchResults"></div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Ticker</label>
-        <input type="text" class="form-input" id="addTicker" placeholder="AAPL" style="text-transform:uppercase"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Name</label>
-        <input type="text" class="form-input" id="addName" placeholder="Apple Inc."/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Shares</label>
-        <input type="number" class="form-input" id="addShares" placeholder="0.00" step="0.001" min="0.001"/>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitAdd()">Add Holding</button>
+    <div class="modal-title">Add Holding</div>
+    <label>Search</label>
+    <input id="h-search" placeholder="Search ticker or fund name…" oninput="onHoldingSearch(this.value)" autocomplete="off"/>
+    <div class="search-results" id="h-search-results"></div>
+    <label>Ticker Symbol</label>
+    <input id="h-ticker" placeholder="e.g. TAAIX" style="text-transform:uppercase"/>
+    <label>Name</label>
+    <input id="h-name" placeholder="e.g. Thrivent Aggressive Fund"/>
+    <label>Shares</label>
+    <input id="h-shares" type="number" placeholder="0" step="0.001"/>
+    <label>Manual Price (optional — leave blank to auto-sync)</label>
+    <input id="h-price" type="number" placeholder="auto" step="0.01"/>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('holding')">Cancel</button>
+      <button class="btn-save" onclick="saveHolding()">Add Holding</button>
     </div>
   </div>
 </div>
 
-<!-- ── Edit Modal ─────────────────────────────────────────────────────────── -->
-<div class="modal-overlay" id="editModal">
+<!-- Add Expense Modal -->
+<div class="modal-overlay" id="modal-expense">
   <div class="modal">
-    <div class="modal-header">
-      <h3 class="modal-title">Edit Holding</h3>
-      <button class="modal-close" onclick="closeModal('editModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="editId"/>
-      <div class="form-group">
-        <label class="form-label">Ticker</label>
-        <input type="text" class="form-input" id="editTicker" disabled/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Name</label>
-        <input type="text" class="form-input" id="editName"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Shares</label>
-        <input type="number" class="form-input" id="editShares" step="0.001" min="0.001"/>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('editModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="submitEdit()">Save Changes</button>
+    <div class="modal-title">Add Expense</div>
+    <label>Description</label><input id="e-name" placeholder="e.g. Groceries"/>
+    <label>Amount ($)</label><input id="e-amount" type="number" placeholder="0.00" step="0.01"/>
+    <label>Category</label>
+    <select id="e-cat">
+      <option>Food and Dining</option><option>Housing</option><option>Transport</option>
+      <option>Health and Fitness</option><option>Entertainment</option><option>Shopping</option><option>Other</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('expense')">Cancel</button>
+      <button class="btn-save" onclick="saveExpense()">Add Expense</button>
     </div>
   </div>
 </div>
 
-<!-- ── Delete Confirm ─────────────────────────────────────────────────────── -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal modal--sm">
-    <div class="modal-header">
-      <h3 class="modal-title">Remove Holding</h3>
-      <button class="modal-close" onclick="closeModal('deleteModal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <p class="modal-text">Remove <strong id="deleteName"></strong> from your portfolio?</p>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
-      <button class="btn btn-danger" onclick="confirmDelete()">Remove</button>
+<!-- Edit Budget Modal -->
+<div class="modal-overlay" id="modal-budget">
+  <div class="modal">
+    <div class="modal-title">Edit Budget</div>
+    <label>Monthly Budget ($)</label><input id="b-total" type="number" placeholder="3000"/>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('budget')">Cancel</button>
+      <button class="btn-save" onclick="saveBudget()">Save</button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+<!-- Add Category Modal -->
+<div class="modal-overlay" id="modal-category">
+  <div class="modal">
+    <div class="modal-title">Add Category</div>
+    <label>Category Name</label><input id="c-name" placeholder="e.g. Rent"/>
+    <label>Monthly Limit ($)</label><input id="c-limit" type="number" placeholder="0"/>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('category')">Cancel</button>
+      <button class="btn-save" onclick="saveCategory()">Add</button>
+    </div>
+  </div>
+</div>
 
-<script src="/static/js/app.js"></script>
+<script>
+const ICONS  = {'Food and Dining':'🍔','Housing':'🏠','Transport':'🚗','Health and Fitness':'💪','Entertainment':'🎮','Shopping':'🛍️','Other':'📦'};
+const COLORS = ['#e8254a','#1a8a4a','#c8a400','#1e6fb5','#8a3fb5','#c45f00'];
+
+let state = { holdings:[], expenses:[], categories:[], budget:0, cash:0, lastSync:null };
+let activePeriod = '1M';
+let chartTicker  = null;
+let chartName    = null;
+let searchTimer  = null;
+
+const fmt    = n => '$' + Math.round(n).toLocaleString();
+const fmtDec = n => '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+const fmtNav = n => '$' + Number(n).toFixed(2);
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+document.getElementById('hdr-date').textContent =
+  new Date().toLocaleDateString('en-US',{weekday:'short',month:'long',day:'numeric'});
+document.getElementById('budget-month-title').textContent =
+  new Date().toLocaleDateString('en-US',{month:'long'}) + ' Budget';
+
+async function boot() {
+  try {
+    const [cashRes, budgetRes, catsRes, expRes] = await Promise.all([
+      fetch('/api/cash'), fetch('/api/budget'), fetch('/api/categories'), fetch('/api/expenses')
+    ]);
+    state.cash       = (await cashRes.json()).value || 0;
+    state.budget     = (await budgetRes.json()).monthly_limit || 0;
+    state.categories = await catsRes.json();
+    state.expenses   = await expRes.json();
+  } catch(e) { console.error('Boot error:', e); }
+  render();
+  syncPrices();
+}
+
+// ── Sync prices ───────────────────────────────────────────────────────────────
+async function syncPrices() {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  dot.className = 'dot loading';
+  txt.textContent = 'Fetching live prices...';
+  try {
+    const data = await (await fetch('/api/holdings')).json();
+    state.holdings  = data.holdings;
+    state.lastSync  = data.updated;
+    dot.className   = 'dot live';
+    txt.textContent = 'Live via yfinance · ' + state.lastSync;
+
+    // Auto-chart the first holding if none selected
+    if (!chartTicker && state.holdings.length) {
+      const first = state.holdings[0];
+      chartTicker = first.ticker;
+      chartName   = first.name;
+    }
+  } catch(e) {
+    dot.className   = 'dot error';
+    txt.textContent = 'Price server offline. Showing last data.';
+  }
+  render();
+  if (chartTicker) loadChart(chartTicker, activePeriod);
+}
+
+// ── Chart ─────────────────────────────────────────────────────────────────────
+async function loadChart(ticker, period) {
+  chartTicker = ticker;
+  activePeriod = period;
+  const holding = state.holdings.find(h => h.ticker === ticker);
+  if (holding) chartName = holding.name;
+
+  document.getElementById('chart-ticker-lbl').textContent = ticker;
+  document.getElementById('chart-fund-name').textContent  = chartName || ticker;
+  document.getElementById('chart-nav-val').textContent    = '...';
+  document.getElementById('chart-delta').textContent      = '';
+
+  try {
+    const data = await (await fetch(`/api/chart/${ticker}/${period}`)).json();
+    if (!data.length) { drawChart([], period); return; }
+    drawChart(data, period);
+    const lastN  = data[data.length-1].n;
+    const firstN = data[0].n;
+    const delta  = lastN - firstN;
+    const dpct   = firstN > 0 ? ((delta/firstN)*100).toFixed(2) : '0.00';
+    const isUp   = delta >= 0;
+    const color  = isUp ? '#1a8a4a' : '#e8254a';
+    document.getElementById('chart-nav-val').textContent = fmtNav(lastN);
+    const pill = document.getElementById('chart-delta');
+    pill.textContent = (isUp?'+':'') + dpct + '%';
+    pill.style.background = isUp ? 'rgba(26,138,74,0.15)' : 'rgba(232,37,74,0.15)';
+    pill.style.color = color;
+  } catch(e) { console.error('Chart fetch error:', e); }
+}
+
+function setPeriod(p) {
+  if (chartTicker) loadChart(chartTicker, p);
+}
+
+function drawChart(data, period) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active-up','active-dn'));
+  const activePill = [...document.querySelectorAll('.pill')].find(p => p.textContent === period);
+  if (activePill) {
+    const isUp = data.length > 1 ? data[data.length-1].n >= data[0].n : true;
+    activePill.classList.add(isUp ? 'active-up' : 'active-dn');
+  }
+
+  const svgEl = document.getElementById('chart-svg');
+  if (!data.length) {
+    svgEl.innerHTML = `<text x="50%" y="50%" text-anchor="middle" fill="#555" font-size="12" font-family="Inter,sans-serif" dy=".3em">No data available</text>`;
+    return;
+  }
+
+  const W  = svgEl.parentElement.clientWidth - 32;
+  const H  = 160, PL = 46, PR = 8, PT = 14, PB = 28;
+  const cw = W - PL - PR, ch = H - PT - PB;
+  const vals  = data.map(p => p.n);
+  const minV  = Math.min(...vals) - 0.05;
+  const maxV  = Math.max(...vals) + 0.05;
+  const isUp  = vals[vals.length-1] >= vals[0];
+  const color = isUp ? '#1a8a4a' : '#e8254a';
+  const cx = i => PL + (i/(data.length-1||1))*cw;
+  const cy = v => PT + ch - ((v-minV)/(maxV-minV||1))*ch;
+
+  let line = `M ${cx(0)} ${cy(vals[0])}`;
+  for (let i=1;i<data.length;i++) {
+    const mx = (cx(i-1)+cx(i))/2;
+    line += ` C ${mx} ${cy(vals[i-1])}, ${mx} ${cy(vals[i])}, ${cx(i)} ${cy(vals[i])}`;
+  }
+  const area = line + ` L ${cx(data.length-1)} ${H-PB} L ${cx(0)} ${H-PB} Z`;
+
+  let yLines='';
+  for(let i=0;i<=4;i++){
+    const v=minV+(i/4)*(maxV-minV), y=cy(v);
+    yLines+=`<line x1="${PL}" y1="${y}" x2="${W-PR}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>`;
+    yLines+=`<text x="${PL-5}" y="${y+4}" text-anchor="end" fill="#555" font-size="9" font-family="Inter,sans-serif">$${v.toFixed(2)}</text>`;
+  }
+  const xStep = Math.max(1,Math.floor((data.length-1)/4));
+  let xLabels='';
+  for(let i=0;i<data.length;i+=xStep){
+    xLabels+=`<text x="${cx(i)}" y="${H-PB+14}" text-anchor="middle" fill="#555" font-size="9" font-family="Inter,sans-serif">${data[i].d}</text>`;
+  }
+  const gid='cg'+Date.now();
+  svgEl.setAttribute('width',W);
+  svgEl.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svgEl.innerHTML=`
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${color}" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${yLines}
+    <path d="${area}" fill="url(#${gid})"/>
+    <path d="${line}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    ${xLabels}
+    <rect id="chart-overlay" x="${PL}" y="${PT}" width="${cw}" height="${ch}" fill="transparent" style="cursor:crosshair;"/>
+  `;
+
+  const overlay = svgEl.querySelector('#chart-overlay');
+  const tooltip = document.getElementById('chart-tooltip');
+  function showTip(clientX) {
+    const rect=svgEl.getBoundingClientRect();
+    const mx=clientX-rect.left-PL;
+    const idx=Math.max(0,Math.min(data.length-1,Math.round((mx/cw)*(data.length-1))));
+    document.getElementById('tt-date').textContent=data[idx].d;
+    document.getElementById('tt-val').textContent=fmtNav(data[idx].n);
+    tooltip.style.display='block';
+    tooltip.style.left=Math.min(cx(idx)-40,W-110)+'px';
+    tooltip.style.top=(cy(data[idx].n)-54)+'px';
+  }
+  overlay.addEventListener('mousemove', e=>showTip(e.clientX));
+  overlay.addEventListener('mouseleave',()=>{tooltip.style.display='none';});
+  overlay.addEventListener('touchmove',e=>{e.preventDefault();showTip(e.touches[0].clientX);},{passive:false});
+  overlay.addEventListener('touchend',()=>{tooltip.style.display='none';});
+}
+
+// ── Cash ──────────────────────────────────────────────────────────────────────
+function toggleCashEdit() {
+  const row = document.getElementById('cash-input-row');
+  const inp = document.getElementById('cash-input');
+  if (row.classList.contains('open')) { row.classList.remove('open'); }
+  else { inp.value = state.cash; row.classList.add('open'); inp.focus(); }
+}
+async function saveCash() {
+  const v = parseFloat(document.getElementById('cash-input').value);
+  if (!isNaN(v) && v >= 0) {
+    await fetch('/api/cash', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({value:v}) });
+    state.cash = v;
+    render();
+  }
+  document.getElementById('cash-input-row').classList.remove('open');
+}
+
+// ── Holdings ──────────────────────────────────────────────────────────────────
+let holdingSearchTimer = null;
+function onHoldingSearch(val) {
+  clearTimeout(holdingSearchTimer);
+  const el = document.getElementById('h-search-results');
+  if (!val.trim()) { el.innerHTML=''; el.classList.remove('open'); return; }
+  holdingSearchTimer = setTimeout(async () => {
+    try {
+      const results = await (await fetch(`/api/search?q=${encodeURIComponent(val)}`)).json();
+      if (!results.length) { el.innerHTML=''; el.classList.remove('open'); return; }
+      el.innerHTML = results.map(r=>`
+        <div class="search-result-item" onclick="selectHolding('${esc(r.ticker)}','${esc(r.name)}')">
+          <span class="sri-ticker">${esc(r.ticker)}</span>
+          <span class="sri-name">${esc(r.name)}</span>
+          <span class="sri-type">${esc(r.type)}</span>
+        </div>`).join('');
+      el.classList.add('open');
+    } catch(e) {}
+  }, 300);
+}
+function selectHolding(ticker, name) {
+  document.getElementById('h-ticker').value = ticker;
+  document.getElementById('h-name').value   = name;
+  document.getElementById('h-search').value = `${ticker} — ${name}`;
+  const el = document.getElementById('h-search-results');
+  el.innerHTML=''; el.classList.remove('open');
+  document.getElementById('h-shares').focus();
+}
+async function saveHolding() {
+  const ticker = document.getElementById('h-ticker').value.toUpperCase().trim();
+  const name   = document.getElementById('h-name').value.trim();
+  const shares = parseFloat(document.getElementById('h-shares').value) || 0;
+  const manual = parseFloat(document.getElementById('h-price').value)  || 0;
+  if (!ticker || !shares) return;
+  await fetch('/api/holdings', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ticker, name:name||ticker, shares, manual_price:manual})
+  });
+  closeModal('holding');
+  ['h-search','h-ticker','h-name','h-shares','h-price'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('h-search-results').classList.remove('open');
+  syncPrices();
+}
+async function deleteHolding(id) {
+  if (!confirm('Remove this holding?')) return;
+  await fetch(`/api/holdings/${id}`, {method:'DELETE'});
+  if (state.holdings.length) {
+    const remaining = state.holdings.filter(h=>h.id!==id);
+    if (remaining.length && chartTicker === state.holdings.find(h=>h.id===id)?.ticker) {
+      chartTicker = remaining[0].ticker;
+    }
+  }
+  syncPrices();
+}
+
+// ── Expenses ──────────────────────────────────────────────────────────────────
+async function saveExpense() {
+  const name   = document.getElementById('e-name').value.trim();
+  const amount = parseFloat(document.getElementById('e-amount').value) || 0;
+  const cat    = document.getElementById('e-cat').value;
+  if (!name || !amount) return;
+  const date_str = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  await fetch('/api/expenses', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, amount, category:cat, date_str})
+  });
+  state.expenses = await (await fetch('/api/expenses')).json();
+  closeModal('expense');
+  document.getElementById('e-name').value='';
+  document.getElementById('e-amount').value='';
+  render();
+}
+async function deleteExpense(id) {
+  await fetch(`/api/expenses/${id}`, {method:'DELETE'});
+  state.expenses = state.expenses.filter(e=>e.id!==id);
+  render();
+}
+
+// ── Budget ────────────────────────────────────────────────────────────────────
+async function saveBudget() {
+  const val = parseFloat(document.getElementById('b-total').value) || state.budget;
+  await fetch('/api/budget', {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({monthly_limit:val})
+  });
+  state.budget = val;
+  closeModal('budget'); render();
+}
+async function saveCategory() {
+  const name  = document.getElementById('c-name').value.trim();
+  const limit = parseFloat(document.getElementById('c-limit').value) || 0;
+  if (!name || !limit) return;
+  const color = COLORS[state.categories.length % COLORS.length];
+  await fetch('/api/categories', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, monthly_limit:limit, color})
+  });
+  state.categories = await (await fetch('/api/categories')).json();
+  closeModal('category');
+  document.getElementById('c-name').value='';
+  document.getElementById('c-limit').value='';
+  render();
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────────
+function openModal(m)  { document.getElementById('modal-'+m).classList.add('open'); }
+function closeModal(m) { document.getElementById('modal-'+m).classList.remove('open'); }
+function switchTab(t, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('fab').textContent =
+    t==='investments' ? '+ Add Holding' : t==='budget' ? '+ Add Category' : '+ Add Expense';
+  if (t==='investments' && chartTicker) setTimeout(()=>loadChart(chartTicker, activePeriod), 50);
+}
+function fabAction() {
+  const id = document.querySelector('.section.active').id;
+  if (id==='tab-investments') openModal('holding');
+  else if (id==='tab-budget') openModal('category');
+  else openModal('expense');
+}
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) {
+    document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+  }
+});
+window.addEventListener('resize', ()=>{ if(chartTicker) loadChart(chartTicker, activePeriod); });
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  const investTotal  = state.holdings.reduce((s,h)=>s+(h.value||0), 0);
+  const totalSpent   = state.expenses.reduce((s,e)=>s+e.amount, 0);
+  const netWorth     = investTotal + state.cash;
+
+  document.getElementById('nw-val').textContent     = fmt(netWorth);
+  document.getElementById('nw-sub').textContent     = fmt(investTotal)+' invested + '+fmt(state.cash)+' cash';
+  document.getElementById('ov-invest').textContent  = fmt(investTotal);
+  document.getElementById('ov-cash').textContent    = fmt(state.cash);
+  document.getElementById('cash-display').textContent = fmt(state.cash);
+  document.getElementById('ov-budget').textContent  = fmt(state.budget);
+  document.getElementById('ov-spent').textContent   = fmt(totalSpent);
+  document.getElementById('inv-total').textContent  = fmt(investTotal);
+  document.getElementById('exp-month').textContent  = fmtDec(totalSpent);
+  document.getElementById('exp-count').textContent  = state.expenses.length;
+  document.getElementById('live-tag').textContent   = state.lastSync ? 'live · '+state.lastSync : 'syncing';
+
+  // Spending trend (last 6 months mock + current)
+  const months = ['Nov','Dec','Jan','Feb','Mar', new Date().toLocaleDateString('en-US',{month:'short'})];
+  const amounts = [1200,980,1450,1100,1320, Math.max(totalSpent,0)];
+  const maxA = Math.max(...amounts, 1);
+  document.getElementById('spend-trend').innerHTML = months.map((m,i)=>{
+    const h = Math.round((amounts[i]/maxA)*48);
+    const last = i===months.length-1;
+    return `<div class="trend-col"><div class="trend-inner" style="height:${h}px;background:${last?'var(--red)':'var(--surface3)'};border:1px solid ${last?'var(--red)':'var(--border2)'};"></div><span class="trend-lbl">${m}</span></div>`;
+  }).join('');
+
+  // Allocation bars
+  document.getElementById('alloc-rows').innerHTML = state.holdings.map((h,i)=>{
+    const val = h.value || 0;
+    const pct = investTotal > 0 ? Math.round((val/investTotal)*100) : 0;
+    return `<div class="alloc-item"><span class="alloc-lbl">${esc(h.ticker)}</span><div class="alloc-bg"><div class="alloc-fill" style="width:${pct}%;background:${COLORS[i%COLORS.length]};"></div></div><span class="alloc-pct">${pct}%</span></div>`;
+  }).join('');
+
+  // Holdings table
+  document.getElementById('holdings-body').innerHTML = state.holdings.map((h,i)=>{
+    const val = h.value || 0;
+    const pct = investTotal > 0 ? Math.round((val/investTotal)*100) : 0;
+    return `<tr>
+      <td><span class="ticker-badge" onclick="switchToChart('${esc(h.ticker)}','${esc(h.name)}')">${esc(h.ticker)}</span><div class="fund-name-sm">${esc(h.name)}</div></td>
+      <td style="color:var(--secondary);font-size:12px;">${Number(h.shares).toFixed(3)}</td>
+      <td>
+        <div class="alloc-cell"><span style="font-weight:600;">${h.price>0?fmt(val):'...'}</span>
+        <div class="alloc-bar-bg"><div class="alloc-bar-fill" style="width:${pct}%;background:${COLORS[i%COLORS.length]};"></div></div></div>
+        <div style="font-size:10px;color:var(--muted);text-align:right;margin-top:3px;">${h.price>0?fmtNav(h.price)+' NAV':'awaiting'}</div>
+        <div style="font-size:10px;color:var(--red);text-align:right;margin-top:2px;cursor:pointer;" onclick="deleteHolding(${h.id})">remove</div>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px 0;font-size:12px;">No holdings yet. Tap + Add.</td></tr>`;
+
+  // Budget donut
+  const pct = state.budget > 0 ? Math.min(totalSpent/state.budget, 1) : 0;
+  const circ = 2*Math.PI*40;
+  document.getElementById('donut-arc').setAttribute('stroke-dasharray',`${Math.round(pct*circ)} ${Math.round(circ)}`);
+  document.getElementById('donut-arc').setAttribute('stroke', pct>0.85?'#e8254a':'#1a8a4a');
+  document.getElementById('donut-pct').textContent = Math.round(pct*100)+'%';
+  document.getElementById('budget-summary').textContent = fmtDec(totalSpent)+' of '+fmt(state.budget)+' spent';
+
+  // Categories
+  document.getElementById('budget-cats').innerHTML = state.categories.length === 0
+    ? '<p style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0;">Add categories to track spending by area.</p>'
+    : state.categories.map(c => {
+        const spent = state.expenses.filter(e=>e.category===c.name).reduce((s,e)=>s+e.amount,0);
+        const p = c.monthly_limit > 0 ? Math.min(spent/c.monthly_limit, 1) : 0;
+        return `<div class="bcat">
+          <div class="bcat-left"><div class="bcat-dot" style="background:${c.color};"></div><span>${esc(c.name)}</span></div>
+          <div class="bcat-right"><div class="bcat-spent">${fmtDec(spent)}</div><div class="bcat-of">of ${fmt(c.monthly_limit)}</div>
+          <div class="bcat-bar-bg"><div class="bcat-bar-fill" style="width:${Math.round(p*100)}%;background:${c.color};"></div></div></div>
+        </div>`;
+      }).join('');
+
+  // Expenses
+  document.getElementById('expense-list').innerHTML = state.expenses.length === 0
+    ? '<p style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0;">No expenses logged yet.</p>'
+    : state.expenses.slice(0,20).map(e => {
+        const icon  = ICONS[e.category] || '📦';
+        const color = COLORS[Object.keys(ICONS).indexOf(e.category) % COLORS.length] || COLORS[0];
+        return `<div class="exp-item">
+          <div class="exp-icon" style="background:${color}22;">${icon}</div>
+          <div><div class="exp-name">${esc(e.name)}</div><div class="exp-meta">${esc(e.category)} · ${esc(e.date_str||'')}</div></div>
+          <div class="exp-amt">-${fmtDec(e.amount)}</div>
+        </div>`;
+      }).join('');
+}
+
+function switchToChart(ticker, name) {
+  chartTicker = ticker;
+  chartName   = name;
+  // Switch to investments tab
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-investments').classList.add('active');
+  document.querySelectorAll('.nav-btn')[1].classList.add('active');
+  document.getElementById('fab').textContent = '+ Add Holding';
+  setTimeout(()=>loadChart(ticker, activePeriod), 50);
+}
+
+boot();
+</script>
 </body>
 </html>
